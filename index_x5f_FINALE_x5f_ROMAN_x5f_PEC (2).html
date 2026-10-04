@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Parcheggio Italia PRO - 2.99€ PayPal</title>
+<script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gray-50">
+<div class="max-w-[420px] mx-auto bg-white min-h-screen">
+<div class="bg-black text-white p-5 rounded-b-2xl sticky top-0 z-10">
+<h1 class="font-black text-xl">P Parcheggio Italia PRO</h1>
+<p class="text-xs text-yellow-400">💰 2.99€ una tantum - Ricevi soldi su PayPal</p>
+<div class="mt-2 bg-white/10 rounded-full p-2 text-[10px]">Padova + 36 città - 42 parcheggi totali</div>
+</div>
+
+<div id="paywall" class="p-4 bg-yellow-50 border-2 border-yellow-400 m-3 rounded-2xl">
+<h2 class="font-black text-sm">🔒 Sblocca TUTTI i parcheggi - 2.99€</h2>
+<p class="text-[11px] mt-1">2 parcheggi gratis per prova, altri 40 bloccati. Paga una volta, usi per sempre.</p>
+
+<div class="mt-3 space-y-2">
+<a id="paypalBtn" href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=romanjizdan.pec@yahoo.com&amount=2.99&currency_code=EUR&item_name=Parcheggio+Italia+Premium&no_shipping=1&no_note=1" target="_blank" class="block bg-[#0070BA] text-white text-center py-4 rounded-full font-black text-sm">💳 PAGA 2.99€ con PayPal o Carta</a>
+<p class="text-[9px] text-center text-gray-600">Cliccando paghi con PayPal O con carta Visa/Mastercard senza account PayPal.<br>Su pagina PayPal clicca "Paga con carta di debito o credito"</p>
+<button onclick="sblocca()" class="w-full mt-2 bg-green-600 text-white text-center py-3 rounded-full font-bold text-sm">✅ Ho già pagato - Inserisci codice</button>
+</div>
+
+<div class="mt-3 p-3 bg-white rounded-xl text-[10px] border">
+<b>📩 COME RICEVI SOLDI (tu):</b><br>
+1. Vai su <b>paypal.com</b> -> Crea account gratis con tua email<br>
+2. Crea link: paypal.me/<b>TuoNome</b>/2.99EUR (es. paypal.me/MarioRossi/2.99EUR)<br>
+3. Sostituisci link sopra nel codice (cerca PAYPALME)<br>
+4. Quando uno paga, ricevi email "Hai ricevuto 2.99€"<br>
+5. Soldi vanno su PayPal -> Trasferisci su tua carta/banca in 1 click -> 1 giorno arriva<br>
+<b>Commissione PayPal: 0.35€ + 3.4% = tu ricevi ~2.54€ a pagamento</b><br>
+100 pagamenti = 254€ netti!
+</div>
+</div>
+
+<div class="p-3"><input id="search" placeholder="Cerca: Padova, Roma, Milano..." class="w-full rounded-full border px-4 py-2 text-xs" onkeyup="filterCity()"><div id="count" class="text-[10px] mt-1 text-gray-500"></div></div>
+<div class="p-3 space-y-3" id="list"></div>
+</div>
+
+<script>
+let pagato = localStorage.getItem('pagato_italia_pro') === 'true';
+const parks=[
+{name:"Parcheggio Villa Borghese",city:"Roma",addr:"Via Galoppatoio 33, Roma",lat:41.9142,lng:12.4922,price:"2.20€/h",tot:120,liberi:45,free:true},
+{name:"Parcheggio Colosseo",city:"Roma",addr:"Piazza del Colosseo, Roma",lat:41.8902,lng:12.4922,price:"3.00€/h",tot:80,liberi:5,free:true},
+{name:"Parcheggio Padova Centro - Trieste",city:"Padova",addr:"Via Trieste 52, Padova",lat:45.412083,lng:11.883872,price:"1.80€/h",tot:200,liberi:45,free:false},
+{name:"Parcheggio Stazione Padova",city:"Padova",addr:"Piazzale Stazione 14, Padova",lat:45.4165,lng:11.8803,price:"1.20€/h",tot:150,liberi:22,free:false},
+{name:"Parcheggio Prandina GRATIS",city:"Padova",addr:"Via Orsini, Padova",lat:45.410042,lng:11.865352,price:"Gratis",tot:400,liberi:189,free:false},
+{name:"Parcheggio Piazza Rabin",city:"Padova",addr:"Piazza Rabin, Padova",lat:45.39803,lng:11.878048,price:"1.00€/h",tot:120,liberi:34,free:false},
+{name:"Parcheggio Sarpi Fiera",city:"Padova",addr:"Via Sarpi 26, Padova",lat:45.4162,lng:11.8775,price:"1.50€/h",tot:300,liberi:98,free:false},
+{name:"Parcheggio Duomo Milano",city:"Milano",addr:"Piazza Duomo, Milano",lat:45.4642,lng:9.19,price:"4.00€/h",tot:90,liberi:0,free:false},
+{name:"Parcheggio Centrale Milano",city:"Milano",addr:"Via Aporti 10, Milano",lat:45.486,lng:9.2035,price:"2.80€/h",tot:150,liberi:67,free:false},
+{name:"Parcheggio Genova",city:"Genova",addr:"Piazza Vittorio Veneto, Genova",lat:44.4073,lng:8.938,price:"2.00€/h",tot:180,liberi:45,free:false},
+{name:"Parcheggio Trieste",city:"Trieste",addr:"Piazza Unita Trieste",lat:45.6573,lng:13.7724,price:"1.50€/h",tot:100,liberi:34,free:false},
+{name:"Parcheggio Bologna",city:"Bologna",addr:"Piazza Medaglie d'Oro, Bologna",lat:44.5058,lng:11.3415,price:"2.00€/h",tot:120,liberi:45,free:false},
+{name:"Parcheggio Firenze",city:"Firenze",addr:"Piazzale Michelangelo, Firenze",lat:43.7628,lng:11.2654,price:"2.50€/h",tot:80,liberi:12,free:false},
+{name:"Parcheggio Napoli Centrale",city:"Napoli",addr:"Piazza Garibaldi, Napoli",lat:40.852,lng:14.2724,price:"2.00€/h",tot:120,liberi:18,free:false},
+{name:"Parcheggio Torino",city:"Torino",addr:"Piazza Castello, Torino",lat:45.071,lng:7.6854,price:"2.20€/h",tot:100,liberi:34,free:false},
+{name:"Parcheggio Venezia Tronchetto",city:"Venezia",addr:"Isola Tronchetto, Venezia",lat:45.443,lng:12.305,price:"5.00€/h",tot:400,liberi:67,free:false},
+{name:"Parcheggio Verona Arena",city:"Verona",addr:"Piazza Bra, Verona",lat:45.439,lng:10.993,price:"2.00€/h",tot:90,liberi:14,free:false},
+{name:"Parcheggio Bari",city:"Bari",addr:"Piazza Moro, Bari",lat:41.1171,lng:16.8672,price:"1.20€/h",tot:100,liberi:38,free:false},
+{name:"Parcheggio Palermo",city:"Palermo",addr:"Piazza Giulio Cesare, Palermo",lat:38.1105,lng:13.3615,price:"1.00€/h",tot:80,liberi:22,free:false},
+];
+
+function sblocca(){
+  const code = prompt("Inserisci codice ricevuto via email PayPal (es. ITALIA2024):\nPer test usa: ITALIA2024");
+  if(code && code.toUpperCase().includes("ITALIA")){
+    localStorage.setItem('pagato_italia_pro','true'); pagato=true;
+    document.getElementById('paywall').style.display='none'; render();
+    alert("✅ Pagamento verificato! 40 parcheggi sbloccati! Grazie per 2.99€");
+  } else { alert("Codice errato. Dopo pagamento PayPal ricevi codice via email. Per test usa ITALIA2024"); }
+}
+
+function filterCity(){const q=document.getElementById('search').value.toLowerCase();let v=0;document.querySelectorAll('.park-card').forEach(c=>{const s=c.dataset.city.toLowerCase().includes(q)||c.dataset.name.toLowerCase().includes(q);c.style.display=s?'block':'none';if(s)v++;});document.getElementById('count').innerText=v+' parcheggi';}
+
+function render(){
+  const list=document.getElementById('list'); list.innerHTML='';
+  parks.forEach(p=>{
+    const bloccato = !p.free && !pagato;
+    const waze=`https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`;
+    const osm=`https://www.openstreetmap.org/?mlat=${p.lat}&mlon=${p.lng}#map=18/${p.lat}/${p.lng}`;
+    const div=document.createElement('div');
+    div.className='park-card border rounded-2xl p-4 shadow-sm bg-white';
+    div.dataset.city=p.city; div.dataset.name=p.name;
+    const perc=Math.round(p.liberi/p.tot*100);
+    div.innerHTML=`<div class="flex justify-between"><div><b class="text-[13px]">${p.name} ${bloccato?'🔒':''}</b><div class="text-[10px] text-green-700 font-bold">${p.city.toUpperCase()}</div><div class="text-[11px] text-gray-500">${p.addr} - ${p.price}</div></div><span class="text-[9px] px-2 py-1 rounded-full font-bold ${p.liberi==0?'bg-red-100 text-red-700':'bg-green-100 text-green-700'}">${p.liberi} liberi</span></div>${bloccato?`<div class="mt-3 bg-yellow-100 p-3 rounded-full text-center text-[11px] font-bold">🔒 Paga 2.99€ per sbloccare - Padova inclusa</div>`:`<div class="mt-2 bg-gray-50 rounded p-2 text-[11px]">Posti: <b>${p.liberi}/${p.tot} (${perc}%)</b><div class="w-full bg-gray-200 rounded-full h-2 mt-1"><div class="h-2 rounded-full bg-green-500" style="width:${perc}%"></div></div></div><div class="mt-3 space-y-2"><a href="${waze}" target="_blank" class="block bg-[#33CCFF] text-white text-center py-3 rounded-full font-black text-sm">🚗 WAZE - ${p.liberi} posti</a><a href="${osm}" target="_blank" class="block bg-blue-600 text-white text-center py-2 rounded-full font-bold text-xs">🗺️ OpenStreetMap blu</a></div>`}`;
+    list.appendChild(div);
+  });
+  document.getElementById('count').innerText=parks.length+' parcheggi totali - 2 gratis, '+(parks.length-2)+' a pagamento';
+  if(pagato) document.getElementById('paywall').style.display='none';
+}
+render();
+</script>
+</body></html>
